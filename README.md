@@ -1,4 +1,4 @@
-# Learning Odin and SDL3 2D API
+# Learning Odin and the SDL3 2D API
 
 Learning the Odin language and SDL3 by building a simplified 2D ASCII dungeon crawler game and sharing it with the community. I will use the SDL 2D API (not the new GPU API)
 
