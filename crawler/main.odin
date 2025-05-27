@@ -5,9 +5,10 @@ package crawler
 //TODO setup spall
 
 import "base:runtime"
-import "core:log" //TODO remove me and use debug
+import "core:log" 
 import "core:mem"
 import sdl "vendor:sdl3"
+
 
 sdl_log :: proc "c" (
 	userdata: rawptr,
@@ -29,7 +30,7 @@ sdl_log :: proc "c" (
 	case .CRITICAL:
 		level = .Fatal
 	}
-	log.logf(level, "SDL {}: {}", category, message) //TODO remove me and use debug
+	log.logf(level, "SDL {}: {}", category, message)
 }
 
 main :: proc() {
@@ -83,14 +84,12 @@ main :: proc() {
 		return
 	}
 
+	TARGET_FPS: u64 : 60
+	TARGET_FRAME_TIME: u64 : 1000 / TARGET_FPS
 
-	//last_ticks := sdl.GetTicks()
+	last_ticks := sdl.GetTicks()
 
 	game_loop: for {
-
-	//	new_ticks := sdl.GetTicks()
-	//	delta_time := f32(new_ticks - last_ticks) / 1000
-	//	last_ticks = new_ticks
 
 		// process events
 		ev: sdl.Event
@@ -104,12 +103,31 @@ main :: proc() {
 			}
 		}
 
-		// update game state
-		// draw
+		new_ticks := sdl.GetTicks()
+		dt: f32 = f32(new_ticks - last_ticks) / 1000
+
+		game_update(dt)
+		game_draw(renderer)
+
+		
+		frame_time := sdl.GetTicks() - last_ticks
+		if frame_time < TARGET_FRAME_TIME {
+			sdl.Delay(u32(TARGET_FRAME_TIME - frame_time))
+		}
+
+		last_ticks = new_ticks
+	}
+
+	game_update :: proc(dt: f32) {
+
+	}
+
+	game_draw :: proc(renderer: ^sdl.Renderer) {
 		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
 		sdl.RenderClear(renderer)
-		sdl.RenderPresent(renderer)
-		sdl.Delay(16) // ~60 FPS
 
+
+
+		sdl.RenderPresent(renderer)
 	}
 }
