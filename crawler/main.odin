@@ -1,17 +1,13 @@
 package crawler
 
-//TODO build debug and release to correct dir (windows) * delete dir every time and old stuff
-//TODO ignore build dir in git
 //TODO show atlas
-//TODO setup debug with tooling
 //TODO setup draw with tooling
+//TODO setup spall
 
 import "base:runtime"
 import "core:log" //TODO remove me and use debug
 import "core:mem"
 import sdl "vendor:sdl3"
-//import image "vendor:sdl3/image"
-
 
 sdl_log :: proc "c" (
 	userdata: rawptr,
@@ -70,17 +66,31 @@ main :: proc() {
 	defer sdl.Quit()
 
 
-//	WINDOWS_FLAGS: sdl.WindowFlags : sdl.WINDOWPOS_CENTERED
-	//window := sdl.CreateWindow("Exterminate", 1280, 720, WINDOWS_FLAGS)
-//	defer sdl.DestroyWindow(window)
+	window_flags: sdl.WindowFlags
+	window_flags += {.RESIZABLE}
+	window: ^sdl.Window = sdl.CreateWindow("Exterminate", 1280, 720, window_flags)
+	defer sdl.DestroyWindow(window)
+	if window == nil {
+		log.error("SDL_CreateWindow failed: {}", sdl.GetError())
+		return
+	}
+
+	s: cstring : "SDL_CreateRenderer"
+	renderer: ^sdl.Renderer = sdl.CreateRenderer(window, nil)
+	defer sdl.DestroyRenderer(renderer)
+	if renderer == nil {
+		log.error("SDL_CreateRenderer failed: {}", sdl.GetError())
+		return
+	}
+
 
 	//last_ticks := sdl.GetTicks()
 
 	game_loop: for {
 
-		//	new_ticks := sdl.GetTicks()
-		//	delta_time := f32(new_ticks - last_ticks) / 1000
-		//	last_ticks = new_ticks
+	//	new_ticks := sdl.GetTicks()
+	//	delta_time := f32(new_ticks - last_ticks) / 1000
+	//	last_ticks = new_ticks
 
 		// process events
 		ev: sdl.Event
@@ -94,17 +104,12 @@ main :: proc() {
 			}
 		}
 
-		update()
-		draw()
+		// update game state
+		// draw
+		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
+		sdl.RenderClear(renderer)
+		sdl.RenderPresent(renderer)
+		sdl.Delay(16) // ~60 FPS
 
 	}
-}
-
-
-update :: proc() {
-	//TODO update game
-}
-
-draw :: proc() {
-	//TODO draw game
 }
