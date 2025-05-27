@@ -19,3 +19,11 @@ Learning the Odin language and SDL3 by building a simplified 2D ASCII dungeon cr
 [Learn SDL3](https://libsdl.org/)
 
 [Watch tutorial on SDL3 GPU API on YouTube](https://www.youtube.com/@DanKorostelev) *This is not the 2D API I use, but it is still good learning material.*
+
+### Data Oriented Design basics
+
+[CppCon 2014: Mike Acton "Data-Oriented Design and C++](https://www.youtube.com/watch?v=rX0ItVEVjHc&t=2026s)
+
+[Nic Barker - Intro to Data Oriented Design for Games](https://www.youtube.com/watch?v=WwkuAqObplU)
+
+[Jason Booth - Practical Optimizations](https://www.youtube.com/watch?v=NAVbI1HIzCE&t=1085s)

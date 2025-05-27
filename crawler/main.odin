@@ -5,7 +5,7 @@ package crawler
 //TODO setup spall
 
 import "base:runtime"
-import "core:log" 
+import "core:log"
 import "core:mem"
 import sdl "vendor:sdl3"
 
@@ -69,7 +69,7 @@ main :: proc() {
 
 	window_flags: sdl.WindowFlags
 	window_flags += {.RESIZABLE}
-	window: ^sdl.Window = sdl.CreateWindow("Exterminate", 1280, 720, window_flags)
+	window: ^sdl.Window = sdl.CreateWindow("ODIN ASCII CRAWLER WITH SDL3", 1280, 720, window_flags)
 	defer sdl.DestroyWindow(window)
 	if window == nil {
 		log.error("SDL_CreateWindow failed: {}", sdl.GetError())
@@ -109,7 +109,7 @@ main :: proc() {
 		game_update(dt)
 		game_draw(renderer)
 
-		
+
 		frame_time := sdl.GetTicks() - last_ticks
 		if frame_time < TARGET_FRAME_TIME {
 			sdl.Delay(u32(TARGET_FRAME_TIME - frame_time))
@@ -125,7 +125,6 @@ main :: proc() {
 	game_draw :: proc(renderer: ^sdl.Renderer) {
 		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
 		sdl.RenderClear(renderer)
-
 
 
 		sdl.RenderPresent(renderer)
