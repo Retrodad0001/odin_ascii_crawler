@@ -26,5 +26,7 @@ xcopy /y D:\DevTools\Odin\vendor\sdl3\*.dll %OUT_DIR% > nul
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 xcopy /y D:\DevTools\Odin\vendor\sdl3\ttf\*.dll %OUT_DIR% > nul
 IF %ERRORLEVEL% NEQ 0 exit /b 1
+xcopy /y D:\DevTools\Odin\vendor\sdl3\image\*.dll %OUT_DIR% > nul
+IF %ERRORLEVEL% NEQ 0 exit /b 1
 
-%OUT_DIR%\landfall_debug.exe.exe 
+%OUT_DIR%\landfall_debug.exe

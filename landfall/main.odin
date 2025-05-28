@@ -69,7 +69,7 @@ main :: proc() {
 
 	window_flags: sdl.WindowFlags
 	window_flags += {.RESIZABLE}
-	window: ^sdl.Window = sdl.CreateWindow("ODIN ASCII CRAWLER WITH SDL3", 1280, 720, window_flags)
+	window: ^sdl.Window = sdl.CreateWindow("ODIN SIMPLE RTS WITH SDL3", 1280, 720, window_flags)
 	defer sdl.DestroyWindow(window)
 	if window == nil {
 		log.error("SDL_CreateWindow failed: {}", sdl.GetError())
