@@ -58,7 +58,6 @@ main :: proc() {
 		mem.tracking_allocator_destroy(&track)
 	}
 
-	//TODO test memory leak detection
 	SDL_INIT_FLAGS :: sdl.INIT_VIDEO
 	if (sdl.Init(SDL_INIT_FLAGS)) == false {
 		log.error("LANDFALL | SDL_Init failed: {}", sdl.GetError())
@@ -83,13 +82,13 @@ main :: proc() {
 		return
 	}
 
-
-	atlas_surface: ^sdl.Surface = image.LoadPNG_IO(sdl.IOFromFile("assets/atlas.png", "rb"))
-	sdl.DestroySurface(atlas_surface)
+	atlas_surface: ^sdl.Surface = image.LoadPNG_IO(sdl.IOFromFile("assets/atlas.png", "r"))
+	defer sdl.DestroySurface(atlas_surface)
 	if atlas_surface == nil {
 		log.error("LANDFALL | SDL_CreateTextureFromSurface failed: {}", sdl.GetError())
 		return
 	}
+
 	atlas_texture: ^sdl.Texture = sdl.CreateTextureFromSurface(renderer, atlas_surface)
 	if atlas_texture == nil {
 		log.error("LANDFALL | SDL_CreateTextureFromSurface failed: {}", sdl.GetError())
@@ -99,9 +98,10 @@ main :: proc() {
 
 	defer sdl.DestroyTexture(atlas_texture)
 
-
 	TARGET_FPS: u64 : 60
 	TARGET_FRAME_TIME: u64 : 1000 / TARGET_FPS
+
+	entity_manager: EntityManager = entity_create_entity_manager()
 
 	last_ticks := sdl.GetTicks()
 
@@ -123,8 +123,7 @@ main :: proc() {
 		dt: f32 = f32(new_ticks - last_ticks) / 1000
 
 		game_update(dt)
-		game_draw(renderer, atlas_texture)
-
+		game_draw(renderer, atlas_texture, entity_manager)
 
 		frame_time := sdl.GetTicks() - last_ticks
 		if frame_time < TARGET_FRAME_TIME {
@@ -139,12 +138,20 @@ main :: proc() {
 	}
 
 	//TODO set pixel perfect snap or something
-	game_draw :: proc(renderer: ^sdl.Renderer, atlas_texture: ^sdl.Texture) {
+	game_draw :: proc(
+		renderer: ^sdl.Renderer,
+		atlas_texture: ^sdl.Texture,
+		entity_manager: EntityManager,
+	) {
 		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
 		sdl.RenderClear(renderer)
 
-		//for now the whole atlas is drawn
-		sdl.RenderTexture(renderer, atlas_texture, nil, nil)
+
+		//TODO is batch rendering enabled?
+		for _ in entity_manager.entities {
+			//TODO draw entity corredct instead of just the atlas
+			sdl.RenderTexture(renderer, atlas_texture, nil, nil)
+		}
 
 		sdl.RenderPresent(renderer)
 	}
