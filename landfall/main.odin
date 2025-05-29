@@ -1,13 +1,14 @@
 package landfall
 
-//TODO show atlas
 //TODO setup draw with tooling
 //TODO setup spall
+//TOOD show mouse position in debug overlay
 
 import "base:runtime"
 import "core:log"
 import "core:mem"
 import sdl "vendor:sdl3"
+import image "vendor:sdl3/image"
 
 
 sdl_log :: proc "c" (
@@ -37,52 +38,67 @@ main :: proc() {
 	context.logger = log.create_console_logger()
 	log.debug("starting game")
 
-	when ODIN_DEBUG {
-		track: mem.Tracking_Allocator
-		mem.tracking_allocator_init(&track, context.allocator)
-		context.allocator = mem.tracking_allocator(&track)
+	track: mem.Tracking_Allocator
+	mem.tracking_allocator_init(&track, context.allocator)
+	context.allocator = mem.tracking_allocator(&track)
 
-		defer {
-			if len(track.allocation_map) > 0 {
-				log.error("=== %v allocations not freed: ===\n", len(track.allocation_map))
-				for _, entry in track.allocation_map {
-					log.error("- %v bytes @ %v\n", entry.size, entry.location)
-				}
+	defer {
+		if len(track.allocation_map) > 0 {
+			log.error("LANDFALL | **%v allocations not freed: **\n", len(track.allocation_map))
+			for _, entry in track.allocation_map {
+				log.error("- %v bytes @ %v\n", entry.size, entry.location)
 			}
-			if len(track.bad_free_array) > 0 {
-				log.error("=== %v incorrect frees: ===\n", len(track.bad_free_array))
-				for entry in track.bad_free_array {
-					log.error("- %p @ %v\n", entry.memory, entry.location)
-				}
-			}
-			mem.tracking_allocator_destroy(&track)
 		}
+		if len(track.bad_free_array) > 0 {
+			log.error("LANDFALL | ** %v incorrect frees: **\n", len(track.bad_free_array))
+			for entry in track.bad_free_array {
+				log.error("- %p @ %v\n", entry.memory, entry.location)
+			}
+		}
+		mem.tracking_allocator_destroy(&track)
 	}
 
+	//TODO test memory leak detection
 	SDL_INIT_FLAGS :: sdl.INIT_VIDEO
 	if (sdl.Init(SDL_INIT_FLAGS)) == false {
-		log.error("SDL_Init failed: {}", sdl.GetError())
+		log.error("LANDFALL | SDL_Init failed: {}", sdl.GetError())
 		return
 	}
-	defer sdl.Quit()
 
+	defer sdl.Quit()
 
 	window_flags: sdl.WindowFlags
 	window_flags += {.RESIZABLE}
 	window: ^sdl.Window = sdl.CreateWindow("ODIN SIMPLE RTS WITH SDL3", 1280, 720, window_flags)
 	defer sdl.DestroyWindow(window)
 	if window == nil {
-		log.error("SDL_CreateWindow failed: {}", sdl.GetError())
+		log.error("LANDFALL | SDL_CreateWindow failed: {}", sdl.GetError())
 		return
 	}
 
-	s: cstring : "SDL_CreateRenderer"
 	renderer: ^sdl.Renderer = sdl.CreateRenderer(window, nil)
 	defer sdl.DestroyRenderer(renderer)
 	if renderer == nil {
-		log.error("SDL_CreateRenderer failed: {}", sdl.GetError())
+		log.error("LANDFALL | SDL_CreateRenderer failed: {}", sdl.GetError())
 		return
 	}
+
+
+	atlas_surface: ^sdl.Surface = image.LoadPNG_IO(sdl.IOFromFile("assets/atlas.png", "rb"))
+	sdl.DestroySurface(atlas_surface)
+	if atlas_surface == nil {
+		log.error("LANDFALL | SDL_CreateTextureFromSurface failed: {}", sdl.GetError())
+		return
+	}
+	atlas_texture: ^sdl.Texture = sdl.CreateTextureFromSurface(renderer, atlas_surface)
+	if atlas_texture == nil {
+		log.error("LANDFALL | SDL_CreateTextureFromSurface failed: {}", sdl.GetError())
+		return
+	}
+	sdl.SetTextureScaleMode(atlas_texture, .NEAREST) // pixel perfect
+
+	defer sdl.DestroyTexture(atlas_texture)
+
 
 	TARGET_FPS: u64 : 60
 	TARGET_FRAME_TIME: u64 : 1000 / TARGET_FPS
@@ -107,7 +123,7 @@ main :: proc() {
 		dt: f32 = f32(new_ticks - last_ticks) / 1000
 
 		game_update(dt)
-		game_draw(renderer)
+		game_draw(renderer, atlas_texture)
 
 
 		frame_time := sdl.GetTicks() - last_ticks
@@ -122,10 +138,13 @@ main :: proc() {
 
 	}
 
-	game_draw :: proc(renderer: ^sdl.Renderer) {
+	//TODO set pixel perfect snap or something
+	game_draw :: proc(renderer: ^sdl.Renderer, atlas_texture: ^sdl.Texture) {
 		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
 		sdl.RenderClear(renderer)
 
+		//for now the whole atlas is drawn
+		sdl.RenderTexture(renderer, atlas_texture, nil, nil)
 
 		sdl.RenderPresent(renderer)
 	}
