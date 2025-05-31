@@ -1,8 +1,7 @@
 package landfall
 
-//TODO setup draw with tooling
-//TODO setup spall
-//TOOD show mouse position in debug overlay
+//TODO setup draw tooling
+//TODO show mouse position in debug overlay
 
 import "base:runtime"
 import "core:log"
@@ -94,12 +93,13 @@ main :: proc() {
 		log.error("LANDFALL | SDL_CreateTextureFromSurface failed: {}", sdl.GetError())
 		return
 	}
-	sdl.SetTextureScaleMode(atlas_texture, .NEAREST) // pixel perfect
-
 	defer sdl.DestroyTexture(atlas_texture)
+
+	sdl.SetTextureScaleMode(atlas_texture, .NEAREST) // pixel perfect
 
 	TARGET_FPS: u64 : 60
 	TARGET_FRAME_TIME: u64 : 1000 / TARGET_FPS
+	SCALE_FACTOR: f32 : 20.0
 
 	entity_manager: EntityManager = entity_create_entity_manager()
 
@@ -143,16 +143,45 @@ main :: proc() {
 		atlas_texture: ^sdl.Texture,
 		entity_manager: EntityManager,
 	) {
-		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255)
+		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255) //black
 		sdl.RenderClear(renderer)
 
 
 		//TODO is batch rendering enabled?
 		for _ in entity_manager.entities {
 			//TODO draw entity corredct instead of just the atlas
-			sdl.RenderTexture(renderer, atlas_texture, nil, nil)
-		}
 
-		sdl.RenderPresent(renderer)
+			source : Maybe(^sdl.FRect) = &sdl.FRect{
+				x = 0,
+				y = 0,
+				w = 16 ,
+				h = 16 ,
+			}
+
+			destination : Maybe(^sdl.FRect) = &sdl.FRect{
+				x = 0,
+				y = 0,
+				w = 16 * SCALE_FACTOR,
+				h = 16 * SCALE_FACTOR,
+			}
+
+			sdl.RenderTexture(
+				renderer,
+				atlas_texture,
+				source,
+				destination,
+			)
+
+			sdl.SetRenderDrawColor(renderer, 255, 255, 255, 255) //white
+			sdl.RenderDebugText(
+				renderer,
+				210,
+				210,
+				"stuffffffff",
+			)
+			sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255) //black again
+
+			sdl.RenderPresent(renderer)
+		}
 	}
 }
